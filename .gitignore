@@ -14,8 +14,10 @@ __pycache__/
 venv/
 env/
 
-# Ignore generated data and results
-examples/
+# Keep the demo notebook, ignore example datasets
+examples/*
+!examples/
+!examples/demo.ipynb
 output/
 
 dist/
