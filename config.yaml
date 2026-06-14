@@ -1,0 +1,43 @@
+# Default Snakemake configuration for SurvivalNet
+#
+# You can add more cohorts under `datasets`. Each entry should point to the
+# clinical and expression files inside `examples/`.
+
+project_root: .
+examples_root: examples
+output_root: output
+
+datasets:
+  - name: GDC TCGA Stomach Cancer (STAD)
+    clinical: examples/GDC TCGA Stomach Cancer (STAD)/TCGA-STAD.clinical.tsv
+    expression: examples/GDC TCGA Stomach Cancer (STAD)/TCGA-STAD.star_tpm.tsv
+    output: output/GDC TCGA Stomach Cancer (STAD)
+
+prepare:
+  test_size: 0.30
+  max_features: 200
+
+cox:
+  penalizers: "0.01,0.05,0.1,0.5,1.0"
+
+lasso:
+  penalizers: "0.0001,0.0003,0.001,0.003,0.01,0.03,0.1,0.3,1"
+  folds: 5
+  repeats: 3
+  one_se: true
+  random_state: 42
+
+deepsurv:
+  hidden_dim1_grid: "16,32,64"
+  hidden_dim2_grid: "8,16,32"
+  dropout_grid: "0.0,0.1,0.2"
+  learning_rate_grid: "0.0001,0.0003,0.001"
+  batch_size_grid: "16,32"
+  epochs: 80
+  patience: 8
+  validation_split: 0.1
+  random_state: 42
+  batch_norm: true
+  log_transform: true
+  max_features: 120
+  min_expression_rate: 0.05
