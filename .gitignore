@@ -17,7 +17,7 @@ env/
 # Keep the demo notebook, ignore example datasets
 examples/*
 !examples/
-!examples/demo.ipynb
+!examples/demo_STAD.ipynb
 output/
 
 dist/

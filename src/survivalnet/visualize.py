@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
 import numpy as np
 import pandas as pd
 
@@ -67,8 +68,31 @@ def plot_risk_score_distribution(
     if not order:
         order = sorted(data[group_col].dropna().astype(str).unique().tolist())
 
-    grouped = [data.loc[data[group_col].astype(str) == group, score_col].dropna().astype(float).to_numpy() for group in order]
-    box = ax.boxplot(grouped, labels=order, patch_artist=True, widths=0.55, showfliers=False)
+    grouped = [
+        data.loc[data[group_col].astype(str) == group, score_col]
+        .dropna()
+        .astype(float)
+        .to_numpy()
+        for group in order
+    ]
+
+    try:
+        box = ax.boxplot(
+            grouped,
+            tick_labels=order,
+            patch_artist=True,
+            widths=0.55,
+            showfliers=False,
+        )
+    except TypeError:
+        box = ax.boxplot(
+            grouped,
+            labels=order,
+            patch_artist=True,
+            widths=0.55,
+            showfliers=False,
+        )
+
     colors = ["#4C78A8", "#E45756", "#72B7B2", "#F58518"]
     for patch, color in zip(box["boxes"], colors, strict=False):
         patch.set_facecolor(color)
@@ -76,6 +100,7 @@ def plot_risk_score_distribution(
     for median in box["medians"]:
         median.set_color("black")
         median.set_linewidth(1.5)
+
     ax.set_ylabel(score_col)
     ax.set_title("Risk score distribution")
     ax.grid(True, axis="y", alpha=0.25)
@@ -120,10 +145,23 @@ def plot_feature_importance(
     upper = df["CI_upper"].astype(float).to_numpy()
     y = np.arange(len(df))
     xerr = np.vstack([x - lower, upper - x])
+    xmin = max(float(np.nanmin(lower)) * 0.9, 1e-6)
+    xmax = max(float(np.nanmax(upper)) * 1.1, xmin * 1.01)
 
     ax.errorbar(x, y, xerr=xerr, fmt="o", color="#4C78A8", ecolor="gray", capsize=3, lw=1.2)
     ax.axvline(1.0, color="black", linestyle="--", linewidth=1)
     ax.set_xscale("log")
+    ax.set_xlim(xmin, xmax)
+
+    tick_candidates = np.geomspace(xmin, xmax, num=4 if xmax / xmin < 10 else 5)
+    tick_values = np.unique(np.concatenate([tick_candidates, np.array([1.0])]))
+    tick_values = tick_values[(tick_values >= xmin) & (tick_values <= xmax)]
+    tick_values = np.array(sorted(tick_values.tolist()))
+    ax.xaxis.set_major_locator(mticker.FixedLocator(tick_values))
+    ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda value, _: f"{value:.2f}"))
+    ax.xaxis.set_minor_locator(mticker.NullLocator())
+    ax.tick_params(axis="x", labelrotation=25, labelsize=9)
+
     ax.set_yticks(y)
     ax.set_yticklabels(df["feature"].astype(str))
     ax.set_xlabel("Hazard ratio (log scale)")

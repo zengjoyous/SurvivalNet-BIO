@@ -1,0 +1,19 @@
+site_name: SurvivalNet
+site_description: TCGA survival analysis toolkit for Cox, LASSO-Cox, and DeepSurv
+site_author: survivalnet team
+
+theme:
+  name: readthedocs
+
+nav:
+  - Home: index.md
+  - Architecture: architecture.md
+  - Workflow: workflow.md
+  - API: api.md
+
+markdown_extensions:
+  - admonition
+  - tables
+  - fenced_code
+  - toc:
+      permalink: true

@@ -1,0 +1,11 @@
+.git
+.github
+__pycache__
+*.pyc
+.pytest_cache
+.mypy_cache
+.ruff_cache
+output
+site
+docs/site
+miniconda3

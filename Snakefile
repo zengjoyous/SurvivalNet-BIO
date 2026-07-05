@@ -81,6 +81,7 @@ rule lasso:
         repeats=config.get("lasso", {}).get("repeats", 3),
         one_se=config.get("lasso", {}).get("one_se", True),
         random_state=config.get("lasso", {}).get("random_state", 42),
+        no_one_se_flag="--no-one-se" if not config.get("lasso", {}).get("one_se", True) else "",
     shell:
         """
         python scripts/train_lasso.py \
@@ -89,7 +90,7 @@ rule lasso:
             --penalizers "{params.penalizers}" \
             --folds {params.folds} \
             --repeats {params.repeats} \
-            {('--no-one-se' if not params.one_se else '')} \
+            {params.no_one_se_flag} \
             --random-state {params.random_state}
         """
 
@@ -119,6 +120,8 @@ rule deepsurv:
         log_transform=config.get("deepsurv", {}).get("log_transform", True),
         max_features=config.get("deepsurv", {}).get("max_features", 120),
         min_expression_rate=config.get("deepsurv", {}).get("min_expression_rate", 0.05),
+        no_batch_norm_flag="--no-batch-norm" if not config.get("deepsurv", {}).get("batch_norm", True) else "",
+        no_log_transform_flag="--no-log-transform" if not config.get("deepsurv", {}).get("log_transform", True) else "",
     shell:
         """
         python scripts/train_deepsurv.py \
@@ -133,8 +136,8 @@ rule deepsurv:
             --patience {params.patience} \
             --validation-split {params.validation_split} \
             --random-state {params.random_state} \
-            {('--no-batch-norm' if not params.batch_norm else '')} \
-            {('--no-log-transform' if not params.log_transform else '')} \
+            {params.no_batch_norm_flag} \
+            {params.no_log_transform_flag} \
             --max-features {params.max_features} \
             --min-expression-rate {params.min_expression_rate}
         """
