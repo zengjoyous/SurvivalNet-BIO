@@ -1,13 +1,23 @@
+import importlib.util
 import math
+from pathlib import Path
 
 import pandas as pd
 
-from scripts.train_deepsurv import (
-    choose_row,
-    network_complexity,
-    parse_float_grid,
-    parse_int_grid,
-)
+
+ROOT = Path(__file__).resolve().parents[1]
+TRAIN_DEEPSURV_PATH = ROOT / "scripts" / "train_deepsurv.py"
+
+spec = importlib.util.spec_from_file_location("train_deepsurv_for_tests", TRAIN_DEEPSURV_PATH)
+if spec is None or spec.loader is None:
+    raise RuntimeError(f"Cannot load training script from {TRAIN_DEEPSURV_PATH}")
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+
+choose_row = module.choose_row
+network_complexity = module.network_complexity
+parse_float_grid = module.parse_float_grid
+parse_int_grid = module.parse_int_grid
 
 
 def test_parse_grids_deduplicate_and_sort():
