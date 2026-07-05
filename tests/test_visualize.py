@@ -1,5 +1,6 @@
 import pandas as pd
 
+from survivalnet.core import fit_km
 from survivalnet.visualize import (
     plot_feature_importance,
     plot_grouped_km,
@@ -10,8 +11,6 @@ from survivalnet.visualize import (
 
 def test_plot_km_curve_draws():
     import matplotlib.pyplot as plt
-
-    from survivalnet.core import fit_km
 
     data = pd.DataFrame({"time": [1, 2, 3], "event": [1, 0, 1]})
     kmf = fit_km(data, "time", "event")
@@ -35,7 +34,7 @@ def test_plot_grouped_km_draws():
     plt.close(ax.figure)
 
 
-def test_plot_risk_score_distribution_accepts_risk_group():
+def test_plot_risk_score_distribution_draws():
     import matplotlib.pyplot as plt
 
     data = pd.DataFrame(
@@ -61,6 +60,6 @@ def test_plot_feature_importance_draws():
         },
         index=["gene1", "gene2", "gene3"],
     )
-    ax = plot_feature_importance(hazard_ratios)
+    ax = plot_feature_importance(hazard_ratios, top_n=2)
     assert ax is not None
     plt.close(ax.figure)

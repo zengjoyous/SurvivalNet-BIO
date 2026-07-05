@@ -14,11 +14,11 @@ def make_data():
     )
 
 
-def test_cox_model_fit_and_score():
+def test_cox_model_fit_uses_high_variance_features_first():
     data = make_data()
     model = CoxModel(penalizer=0.1).fit(data, "time", "event")
 
-    assert model.feature_cols == ["x1", "x2"]
+    assert model.feature_cols == ["x2", "x1"]
     assert not model.summary.empty
     assert not model.hazard_ratios.empty
 

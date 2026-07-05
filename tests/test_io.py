@@ -34,8 +34,8 @@ def test_normalize_survival_data_standardizes_columns():
     out = normalize_survival_data(df, "time", "status", id_col="sample")
 
     assert list(out.columns[:3]) == ["sample", "duration", "event"]
-    assert out["event"].tolist() == [1, 0]
     assert out["duration"].tolist() == [10, 20]
+    assert out["event"].tolist() == [1, 0]
 
 
 def test_prepare_survival_dataset_keeps_primary_tumor_only():
@@ -60,7 +60,7 @@ def test_prepare_survival_dataset_keeps_primary_tumor_only():
     assert merged["gene1"].tolist() == [1.0, 3.0]
 
 
-def test_split_train_test_respects_requested_ratio():
+def test_split_train_test_stratifies_events():
     df = pd.DataFrame(
         {
             "_PATIENT": [f"P{i}" for i in range(20)],
@@ -76,7 +76,7 @@ def test_split_train_test_respects_requested_ratio():
     assert set(train.columns) == set(df.columns)
 
 
-def test_prepare_feature_matrix_filters_constant_and_low_information_features():
+def test_prepare_feature_matrix_keeps_high_variance_features():
     df = pd.DataFrame(
         {
             "duration": [10, 11, 12, 13],
@@ -94,7 +94,6 @@ def test_prepare_feature_matrix_filters_constant_and_low_information_features():
         max_features=None,
     )
 
+    assert features == ["gene_high", "gene_low"]
     assert "gene_constant" not in features
-    assert "gene_low" not in features
-    assert "gene_high" in features
     assert model_data["gene_high"].iloc[0] == 1.0

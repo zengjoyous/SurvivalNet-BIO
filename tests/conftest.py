@@ -1,4 +1,4 @@
-"""Shared pytest configuration for SurvivalNet tests."""
+"""Shared pytest setup."""
 
 from __future__ import annotations
 

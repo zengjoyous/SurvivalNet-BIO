@@ -51,11 +51,17 @@ def test_split_risk_group_uses_median_cutoff():
     assert list(groups) == ["low", "high", "high"]
 
 
-def test_cox_model_fit_exposes_summary_and_hazard_ratios():
+def test_cox_model_fit_and_predict():
     data = make_data()
-    model = CoxModel().fit(data[["time", "event", "x1"]], "time", "event")
+    model = CoxModel(penalizer=0.1).fit(data, "time", "event")
+
+    assert model.feature_cols == ["x1"]
     assert not model.summary.empty
     assert not model.hazard_ratios.empty
+
+    scores = model.predict_risk_score(data)
+    assert scores.name == "risk_score"
+    assert len(scores) == len(data)
 
 
 def test_plot_grouped_km_with_pvalue_draws():
