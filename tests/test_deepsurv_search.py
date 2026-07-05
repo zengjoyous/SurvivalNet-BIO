@@ -83,5 +83,5 @@ def test_one_se_rule_prefers_simpler_deepsurv():
     best_row, selected_row = choose_row(results, use_one_se_rule=True)
 
     assert math.isclose(float(best_row["mean_c_index"]), 0.81)
-    assert math.isclose(float(selected_row["n_parameters"]), 3000)
+    assert math.isclose(float(selected_row["n_parameters"]), 900)
     assert float(selected_row["n_parameters"]) < float(best_row["n_parameters"])

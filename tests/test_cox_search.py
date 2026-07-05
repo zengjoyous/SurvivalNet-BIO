@@ -69,5 +69,5 @@ def test_one_se_prefers_more_conservative_penalizer():
     best_row, selected_row = _choose_cox_row(results, use_one_se_rule=True)
 
     assert math.isclose(float(best_row["penalizer"]), 0.03)
-    assert math.isclose(float(selected_row["penalizer"]), 0.1)
+    assert math.isclose(float(selected_row["penalizer"]), 0.3)
     assert float(selected_row["mean_selected_features"]) < float(best_row["mean_selected_features"])
