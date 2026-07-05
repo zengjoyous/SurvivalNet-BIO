@@ -11,17 +11,17 @@ from survivalnet import (
 )
 
 
-def test_load_table(tmp_path: Path):
+def test_load_table_reads_tsv(tmp_path: Path):
     path = tmp_path / "clinical.tsv"
     path.write_text("# comment\nsample\tOS.time\tOS\nA\t1\t1\n")
 
     df = load_table(path)
 
     assert list(df.columns) == ["sample", "OS.time", "OS"]
-    assert len(df) == 1
+    assert df.shape == (1, 3)
 
 
-def test_normalize_survival_data():
+def test_normalize_survival_data_standardizes_columns():
     df = pd.DataFrame(
         {
             "sample": ["A", "B"],
@@ -35,9 +35,10 @@ def test_normalize_survival_data():
 
     assert list(out.columns[:3]) == ["sample", "duration", "event"]
     assert out["event"].tolist() == [1, 0]
+    assert out["duration"].tolist() == [10, 20]
 
 
-def test_prepare_survival_dataset_primary_tumor_only():
+def test_prepare_survival_dataset_keeps_primary_tumor_only():
     clinical = pd.DataFrame(
         {
             "_PATIENT": ["TCGA-A", "TCGA-B"],
@@ -55,12 +56,11 @@ def test_prepare_survival_dataset_primary_tumor_only():
 
     merged = prepare_survival_dataset(clinical, expr)
 
-    assert len(merged) == 2
     assert merged["_PATIENT"].tolist() == ["TCGA-A", "TCGA-B"]
     assert merged["gene1"].tolist() == [1.0, 3.0]
 
 
-def test_split_train_test():
+def test_split_train_test_respects_requested_ratio():
     df = pd.DataFrame(
         {
             "_PATIENT": [f"P{i}" for i in range(20)],
@@ -72,10 +72,11 @@ def test_split_train_test():
     train, test = split_train_test(df, test_size=0.3, random_state=0)
 
     assert len(train) + len(test) == len(df)
-    assert len(train) > len(test) > 0
+    assert len(test) == 6
+    assert set(train.columns) == set(df.columns)
 
 
-def test_prepare_feature_matrix_applies_log_transform_and_filters():
+def test_prepare_feature_matrix_filters_constant_and_low_information_features():
     df = pd.DataFrame(
         {
             "duration": [10, 11, 12, 13],

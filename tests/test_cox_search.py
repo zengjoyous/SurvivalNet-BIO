@@ -27,7 +27,7 @@ def test_cox_refinement_grid_spans_nearby_log_range():
     assert all(left < right for left, right in zip(grid, grid[1:]))
 
 
-def test_one_se_prefers_more_conservative_penalizer():
+def test_one_se_prefers_simpler_model_within_threshold():
     results = pd.DataFrame(
         [
             {

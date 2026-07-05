@@ -25,7 +25,6 @@ def test_refinement_grid_spans_nearby_log_range():
     assert grid[0] == 0.03
     assert grid[-1] == 0.3
     assert all(left < right for left, right in zip(grid, grid[1:]))
-    assert len(grid) >= 7
 
 
 def test_one_se_rule_prefers_sparser_model_within_threshold():

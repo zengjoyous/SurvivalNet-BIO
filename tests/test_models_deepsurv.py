@@ -1,33 +1,43 @@
+from __future__ import annotations
+
 import importlib.util
-import math
+import sys
 from pathlib import Path
 
 import pandas as pd
+import pytest
+
+
+pytest.importorskip("pycox")
+pytest.importorskip("torchtuples")
 
 
 ROOT = Path(__file__).resolve().parents[1]
-TRAIN_DEEPSURV_PATH = ROOT / "scripts" / "train_deepsurv.py"
+BOOTSTRAP_PATH = ROOT / "scripts" / "_bootstrap.py"
+SCRIPT_PATH = ROOT / "scripts" / "train_deepsurv.py"
 
-spec = importlib.util.spec_from_file_location("train_deepsurv_for_tests", TRAIN_DEEPSURV_PATH)
-if spec is None or spec.loader is None:
-    raise RuntimeError(f"Cannot load training script from {TRAIN_DEEPSURV_PATH}")
-module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(module)
 
-choose_row = module.choose_row
-network_complexity = module.network_complexity
-parse_float_grid = module.parse_float_grid
-parse_int_grid = module.parse_int_grid
+def _load_module(name: str, path: Path):
+    spec = importlib.util.spec_from_file_location(name, path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Cannot load {path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+sys.modules.setdefault("_bootstrap", _load_module("_bootstrap", BOOTSTRAP_PATH))
+train_deepsurv = _load_module("train_deepsurv_for_tests", SCRIPT_PATH)
 
 
 def test_parse_grids_deduplicate_and_sort():
-    assert parse_int_grid("64,32,64,128") == [32, 64, 128]
-    assert parse_float_grid("0.2,0.1,0.2") == [0.1, 0.2]
+    assert train_deepsurv.parse_int_grid("64,32,64,128") == [32, 64, 128]
+    assert train_deepsurv.parse_float_grid("0.2,0.1,0.2") == [0.1, 0.2]
 
 
 def test_network_complexity_grows_with_width():
-    small = network_complexity(32, 16, 100, batch_norm=False)
-    large = network_complexity(128, 64, 100, batch_norm=False)
+    small = train_deepsurv.network_complexity(32, 16, 100, batch_norm=False)
+    large = train_deepsurv.network_complexity(128, 64, 100, batch_norm=False)
 
     assert large > small
 
@@ -80,8 +90,8 @@ def test_one_se_rule_prefers_simpler_deepsurv():
         ]
     )
 
-    best_row, selected_row = choose_row(results, use_one_se_rule=True)
+    best_row, selected_row = train_deepsurv.choose_row(results, use_one_se_rule=True)
 
-    assert math.isclose(float(best_row["mean_c_index"]), 0.81)
-    assert math.isclose(float(selected_row["n_parameters"]), 900)
+    assert pytest.approx(float(best_row["mean_c_index"])) == 0.81
+    assert pytest.approx(float(selected_row["n_parameters"])) == 900
     assert float(selected_row["n_parameters"]) < float(best_row["n_parameters"])
